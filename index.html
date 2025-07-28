@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>⚓️🔥 CASINO PIRATA 🔥⚓️</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+  <style>
+  body {
+    margin: 0;
+    background-color: #0e0d0c;
+background-image: url('https://www.transparenttextures.com/patterns/black-felt.png');
+    color: #f5e9c4;
+    font-family: 'Trebuchet MS', sans-serif;
+    text-align: center;
+  }
+
+  .container {
+    max-width: 100%;
+    margin: auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  h1 {
+    color: #d4af37;
+    font-size: 3.5rem;
+    margin: 2rem 0 1rem 0;
+    text-shadow: 0 0 10px #000;
+  }
+
+  input, button {
+    width: 90%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    text-align: center;
+  }
+
+  input {
+    background: #1c1c1c;
+    color: #f5e9c4;
+    border: 2px solid #8b5e3c;
+    box-shadow: 0 0 6px #000;
+  }
+
+  button {
+    background: linear-gradient(45deg, #5b1e0f, #c49e59);
+    color: #fff2d0;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 12px #000;
+    transition: transform 0.2s ease;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+  }
+
+  #claimText {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f5e9c4;
+  }
+
+  .whatsapp {
+    background-color: #144e3f;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 1rem;
+    box-shadow: 0 0 10px #000;
+  }
+
+  canvas {
+    width: 80vw;
+    max-width: 360px;
+    height: auto;
+    border: 12px solid #a97c50;
+    border-radius: 50%;
+    margin: 1rem auto;
+    display: block;
+    background: radial-gradient(#3a2c20, #0b0b0b);
+    box-shadow: 0 0 30px #a97c50, 0 0 20px #000 inset;
+  }
+
+  #arrow {
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid #d4af37;
+    margin: auto;
+  }
+
+  #fechaHoraActual, #userLabel, #casinoHeader, #result {
+    font-weight: bold;
+    margin: 10px 0;
+    color: #f2e3b6;
+  }
+
+  #fechaHoraActual {
+    font-size: 1.3rem;
+  }
+
+  #userLabel {
+    font-size: 1.6rem;
+  }
+
+  #casinoHeader {
+    font-size: 2rem;
+    color: #d4af37;
+    text-shadow: 0 0 8px #000;
+  }
+
+  #result {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    color: #fddc88;
+  }
+
+  .info-box-wrapper {
+    margin-top: 180px;
+  }
+
+  .info-box {
+    background: #1a1a1a;
+    color: #f5e9c4;
+    border-radius: 10px;
+    padding: 1rem;
+    width: 90%;
+    margin: 0 auto;
+    box-shadow: 0 0 12px #000;
+    font-weight: bold;
+    border: 2px solid #5b1e0f;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div id="userSection">
+      <h1>⚓️ CASINO PIRATA ⚓️</h1>
+      <input id="usernameInput" placeholder="✍️ INGRESÁ TU USUARIO" />
+      <button onclick="startGame()">⚓️ ENTRAR A PIRATA ⚓️</button>
+      <div class="info-box-wrapper">
+        <div class="info-box">
+          <strong style="font-size: 1.5rem;">💥 PIRATA 💥</strong><br />
+          📲 SOPORTE WHATSAPP 24HS - PAGOS AL INSTANTE <br /><br />
+          <a class="whatsapp" href="https://hoo.be/redpirata24hs-" target="_blank">📞 CONTACTO WHATSAPP</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="wheelSection" style="display: none;">
+      <div id="casinoHeader">⚓️ CASINO PIRATA ⚓️</div>
+      <div id="userLabel"></div>
+      <div id="fechaHoraActual"></div>⚓️
+      <div id="arrow"></div>
+      <canvas id="canvas" width="500" height="500"></canvas>
+      <button id="spin">🎯 GIRAR LA RULETA 🔥</button>
+      <div id="result"></div>
+      <div id="claimText">📸 SACÁ CAPTURA Y RECLAMÁ TU PREMIO 🔥</div>
+      <a class="whatsapp" href="https://hoo.be/redpirata24hs-" target="_blank">💬 RECLAMAR PREMIO</a>
+    </div>
+  </div>
+
+
+  <script>
+  const premios = [
+  { label: "20 % BONO 🏴‍☠️", color: "#c49e60", prob: 30 },
+  { label: "50 % BONO ⚓", color: "#6b4226", prob: 26 },
+  { label: "OTRO GIRO 🦜", color: "#3b3b3b", prob: 0 },
+  { label: "2.500 GRATIS 🪙", color: "#927c4a", prob: 20 },
+  { label: "5.000 GRATIS 🏺", color: "#8B0000", prob: 6 },
+  { label: "10.000 GRATIS 💰", color: "#1E90FF", prob: 1 },
+  { label: "100 % BONO 🗺️", color: "#4b3621", prob: 17 },
+  { label: "50.000 GRATIS 🦈", color: "#0a0a0a", prob: 0 }
+];
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.width / 2;
+    let isSpinning = false;
+
+    function drawWheel() {
+      const arc = 2 * Math.PI / premios.length;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(radius, radius);
+      ctx.rotate(0);
+      ctx.translate(-radius, -radius);
+
+      for (let i = 0; i < premios.length; i++) {
+        const start = i * arc;
+        const end = start + arc;
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.fillStyle = premios[i].color;
+        ctx.arc(radius, radius, radius, start, end);
+        ctx.fill();
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(start + arc / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "white";
+        ctx.font = "bold 22px Arial";
+        ctx.fillText(premios[i].label.toUpperCase(), radius - 10, 10);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    const SUPABASE_URL = 'https://ueiiyibsnmapzygpmeza.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlaWl5aWJzbm1hcHp5Z3BtZXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzODc2NzMsImV4cCI6MjA2Njk2MzY3M30.8yDCfUXBhqeEyFvPL5Pz7W5WWlbK4N25UOEXx4n1hdo';
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const hoy = new Date(Date.now() - (new Date().getTimezoneOffset() * 60000))
+  .toISOString()
+  .split('T')[0];
+let fingerprint = "";
+let username = "";
+let casino = "CASINO PIRATA"; // 👈 CAMBIALO según el casino actual
+let fpReady = FingerprintJS.load().then(fp => fp.get().then(result => {
+  fingerprint = result.visitorId;
+}));
+
+async function yaJugoHoy() {
+  await fpReady;
+  while (!fingerprint) await new Promise(r => setTimeout(r, 50));
+  try {
+    const { data, error } = await client
+      .from('giros')
+      .select('premio, usuario')
+      .eq('fecha', hoy)
+      .eq('casino', casino)
+      .or(`usuario.eq.${username},fingerprint.eq.${fingerprint}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("❌ Error consultando Supabase:", error);
+      return null;
+    }
+
+    return data ? { premio: data.premio, usuarioReal: data.usuario } : null;
+  } catch (e) {
+    console.error("❌ Excepción en yaJugoHoy:", e);
+    return null;
+  }
+}
+
+async function registrarGiro(premio) {
+  const hora = new Date().toISOString();
+  await client.from('giros').insert([{
+    usuario: username,
+    fingerprint,
+    premio,
+    fecha: hoy,
+    hora,
+    casino: 'CASINO PIRATA'
+  }]);
+}
+
+let premioYaJugado = null;
+
+async function startGame() {
+  const input = document.getElementById("usernameInput");
+  username = input.value.trim();
+  if (!username) return input.style.border = "3px solid red";
+
+  premioYaJugado = await yaJugoHoy();
+
+  document.getElementById("userSection").style.display = "none";
+  document.getElementById("wheelSection").style.display = "block";
+
+  const now = new Date();
+  document.getElementById("fechaHoraActual").innerHTML = `📅 ${now.toLocaleDateString()} ⏰ ${now.toLocaleTimeString()}`;
+  drawWheel();
+
+  if (premioYaJugado) {
+    const { premio, usuarioReal } = premioYaJugado;
+    document.getElementById("userLabel").innerHTML = `🔐 USUARIO: <strong>${usuarioReal.toUpperCase()}</strong>`;
+    document.getElementById("result").innerHTML = `🛑 YA JUGASTE HOY COMO <strong>${usuarioReal.toUpperCase()}</strong> Y GANASTE: <strong>${premio}</strong>.`;
+    document.getElementById("spin").disabled = true;
+    document.getElementById("spin").style.opacity = "0.6";
+  } else {
+    document.getElementById("userLabel").innerHTML = `👤 USUARIO: <strong>${username.toUpperCase()}</strong>`;
+  }
+}
+
+document.getElementById("spin").addEventListener("click", async () => {
+  if (isSpinning || premioYaJugado) return;
+
+  const spinBtn = document.getElementById("spin");
+  const result = document.getElementById("result");
+  result.innerHTML = "";
+  isSpinning = true;
+  spinBtn.disabled = true;
+
+  let totalProb = premios.reduce((a, p) => a + p.prob, 0);
+  let rand = Math.random() * totalProb;
+  let acc = 0, selected = 0;
+  for (let i = 0; i < premios.length; i++) {
+    acc += premios[i].prob;
+    if (rand < acc) {
+      selected = i;
+      break;
+    }
+  }
+
+  const anglePerSlice = 360 / premios.length;
+  const offsetToTop = 270;
+  const degreesToRotate = 360 * 5 + (offsetToTop - (selected * anglePerSlice + anglePerSlice / 2));
+
+  canvas.style.transition = "transform 6s cubic-bezier(0.25, 1, 0.5, 1)";
+  canvas.style.transform = `rotate(${degreesToRotate}deg)`;
+
+  setTimeout(async () => {
+    const premio = premios[selected];
+    result.innerHTML = `🎉 ¡FELICIDADES! GANASTE: <strong>${premio.label}</strong>`;
+    await registrarGiro(premio.label);
+    premioYaJugado = premio.label;
+    spinBtn.disabled = true;
+    spinBtn.style.opacity = "0.6";
+    isSpinning = false;
+  }, 6100);
+});
+</script>
+</body>
+</html>
